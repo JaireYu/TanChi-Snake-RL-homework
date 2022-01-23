@@ -19,7 +19,26 @@ class QNetwork(nn.Module):
         l3 = self.relu(self.fc3(l2))
         l4 = self.fc4(l3)
         return l4
-        
+
+class Dueling_QNetwork(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(Dueling_QNetwork, self).__init__()
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc3 = nn.Linear(hidden_dim, hidden_dim)
+        self.value_layer = nn.Linear(hidden_dim, output_dim)
+        self.advantage_layer = nn.Linear(hidden_dim, output_dim)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        l1 = self.relu(self.fc1(x.float()))
+        l2 = self.relu(self.fc2(l1))
+        l3 = self.relu(self.fc3(l2))
+
+        value = self.value_layer(l3)
+        advantage = self.advantage_layer(l3)
+        return value + advantage - advantage.mean()
+
 def get_network_input(player, apple):
     proximity = player.getproximity()
     x = torch.cat([torch.from_numpy(player.pos).double(), torch.from_numpy(apple.pos).double(), 
